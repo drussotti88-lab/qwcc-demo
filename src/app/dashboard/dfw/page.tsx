@@ -336,10 +336,10 @@ export default function DfwPage() {
                       <div className="absolute z-20 rounded-lg border p-3 min-w-44 pointer-events-none shadow-xl"
                         style={{ left: `${Math.min(sx + bw / 2, 65)}%`, top: 'calc(100% + 4px)', transform: 'translateX(-50%)', background: 'hsl(222,18%,12%)', borderColor: st.border }}>
                         <p className="font-display text-sm mb-2 tracking-wide" style={{ color: st.color }}>{scope.name}</p>
-                        {[['Sub', scope.sub], ['Start', fmt(scope.start)], ['Finish', fmt(scope.end)], ['Progress', `${scope.pct}%`],
+                        {([['Sub', scope.sub], ['Start', fmt(scope.start)], ['Finish', fmt(scope.end)], ['Progress', `${scope.pct}%`],
                           scope.status === 'finishing' ? ['⚠ Days left', `${daysLeft}d`] : scope.status === 'overdue' ? ['⚠ Days late', `${Math.abs(daysLeft)}d`] : null,
-                        ].filter(Boolean).map(([k, v]) => (
-                          <div key={k as string} className="flex justify-between gap-4">
+                        ].filter(Boolean) as string[][]).map(([k, v]) => (
+                          <div key={k} className="flex justify-between gap-4">
                             <span className="font-mono text-white/30" style={{ fontSize: 10 }}>{k}</span>
                             <span className="font-mono text-white/70" style={{ fontSize: 10 }}>{v}</span>
                           </div>
