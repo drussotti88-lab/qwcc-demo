@@ -29,9 +29,12 @@ export interface EbayItem {
 
 export interface EbaySummary {
   itemId: string;
+  legacyItemId: string | null;
   title: string;
   price: number | null;
   currency: string;
+  url: string;
+  image: string | null;
 }
 
 export class EbayClient {
@@ -101,17 +104,29 @@ export class EbayClient {
   /**
    * Search active listings (used by market price + "new listing under $X"
    * saved-search watches). Returns summaries sorted by price ascending.
+   * An optional `maxPrice` filters server-side (PRD §11.2: filter by price
+   * server-side).
    */
-  async search(query: string, opts: { limit?: number } = {}): Promise<EbaySummary[]> {
+  async search(
+    query: string,
+    opts: { limit?: number; maxPrice?: number } = {},
+  ): Promise<EbaySummary[]> {
     const limit = opts.limit ?? 20;
-    const raw = await this.authedGet<RawSearch>(
-      `/buy/browse/v1/item_summary/search?q=${encodeURIComponent(query)}&limit=${limit}&sort=price`,
-    );
+    let path =
+      `/buy/browse/v1/item_summary/search?q=${encodeURIComponent(query)}` +
+      `&limit=${limit}&sort=price`;
+    if (typeof opts.maxPrice === 'number') {
+      path += `&filter=${encodeURIComponent(`price:[..${opts.maxPrice}],priceCurrency:USD`)}`;
+    }
+    const raw = await this.authedGet<RawSearch>(path);
     return (raw.itemSummaries ?? []).map((s) => ({
       itemId: s.itemId,
+      legacyItemId: s.legacyItemId ?? null,
       title: s.title,
       price: s.price ? Number(s.price.value) : null,
       currency: s.price?.currency ?? 'USD',
+      url: s.itemWebUrl ?? `https://www.ebay.com/itm/${s.legacyItemId ?? s.itemId}`,
+      image: s.image?.imageUrl ?? s.thumbnailImages?.[0]?.imageUrl ?? null,
     }));
   }
 }
@@ -138,7 +153,15 @@ interface RawItem {
 }
 
 interface RawSearch {
-  itemSummaries?: Array<{ itemId: string; title: string; price?: RawPrice }>;
+  itemSummaries?: Array<{
+    itemId: string;
+    legacyItemId?: string;
+    title: string;
+    price?: RawPrice;
+    itemWebUrl?: string;
+    image?: { imageUrl?: string };
+    thumbnailImages?: Array<{ imageUrl?: string }>;
+  }>;
 }
 
 function normalizeItem(raw: RawItem, legacyItemId: string): EbayItem {

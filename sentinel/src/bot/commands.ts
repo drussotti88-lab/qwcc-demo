@@ -44,7 +44,7 @@ export const commandDefinitions = [
     .addBooleanOption((o) =>
       o
         .setName('create_channel')
-        .setDescription('Create a channel under the Stock Checkers category')
+        .setDescription('Auto-create a channel under the category (default: true unless channel given)')
         .setRequired(false),
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
@@ -163,7 +163,9 @@ async function addRetailer(interaction: ChatInputCommandInteraction): Promise<vo
   const name = interaction.options.getString('name', true);
   const adapter = interaction.options.getString('adapter', true) as AdapterType;
   const channelOpt = interaction.options.getChannel('channel');
-  const createChannel = interaction.options.getBoolean('create_channel') ?? false;
+  // Auto-create by default (PRD §28 #6 decision): create a channel unless an
+  // existing one is bound, or the operator explicitly opts out.
+  const createChannel = interaction.options.getBoolean('create_channel') ?? !channelOpt;
 
   const rest = new DiscordRest(cfg.discord.botToken, { logger });
   let channelId = channelOpt?.id ?? '';

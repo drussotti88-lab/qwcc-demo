@@ -88,7 +88,7 @@ third-party API keys, proxy refs) live in the retailer's `config` JSONB.
 | Command | Effect |
 | --- | --- |
 | `/add-retailer name adapter channel [create_channel]` | Register a retailer; optionally auto-create the channel + webhook |
-| `/add-item retailer url [threshold] [name] [interval] [tcg_sku]` | Resolve URL → product id, insert a watch |
+| `/add-item retailer url [threshold] [name] [interval] [tcg_sku]` | Resolve URL → product id, insert a watch. For eBay, pass an **item URL** to track one listing, or a **search URL** (`/sch/...&_nkw=...`) / `search:<query>` to watch "new listing under $threshold". |
 | `/list-watches [retailer]` | List tracked items with status |
 | `/remove-item id` · `/pause-item id` · `/resume-item id` | Lifecycle control |
 | `/set-threshold id value` · `/set-interval id seconds` | Tuning |
@@ -111,6 +111,11 @@ Run the worker as a **persistent process** on Railway / Fly.io / a small VPS wit
 auto-restart. Continuous sub-minute polling does **not** fit serverless cron
 (timeouts, no persistent state, cold starts). Vercel is reserved for an optional
 read-only dashboard, not the poller.
+
+Included: `Dockerfile` (build + run), `fly.toml` (Fly.io), `Procfile`
+(Railway/Heroku-style). **Free-first**: co-locate on the host already running DNA
+Card Vault (shares the `price_cache` table) — see `DECISIONS.md` for the cost
+breakdown of every PRD §28 open question.
 
 ## Tests
 

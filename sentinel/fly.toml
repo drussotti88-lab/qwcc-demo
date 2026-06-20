@@ -1,0 +1,25 @@
+# Fly.io deployment for the Sentinel worker (engine + bot).
+# Cheapest persistent option if you don't already run a VPS. Secrets are set
+# with `fly secrets set DISCORD_BOT_TOKEN=... SUPABASE_URL=...` (never in repo).
+#
+#   fly launch --no-deploy     # once, to create the app
+#   fly secrets set ...        # all vars from .env.example
+#   fly deploy
+
+app = "sentinel"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+# Single always-on machine. This is a worker, not a web service — no HTTP ports.
+# Do NOT enable auto_stop: continuous sub-minute polling must not be suspended.
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+
+[processes]
+  app = "node dist/index.js"
+
+[deploy]
+  strategy = "immediate"
