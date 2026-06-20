@@ -49,6 +49,7 @@ Discord (Stock Checkers category)
 | `src/db/` | Supabase client, row types, repositories |
 | `src/lib/` | Config, logger, HTTP client, rate limiter, UA rotation, Discord REST |
 | `supabase/schema.sql` | Postgres schema (PRD §13) |
+| `dashboard/` | Optional read-only web dashboard for Vercel (Next.js) — see `dashboard/README.md` |
 
 ## Adapter reliability (PRD §11.5)
 
