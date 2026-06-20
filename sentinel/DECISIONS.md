@@ -9,7 +9,7 @@ that still costs money is listed at the bottom.
 | 2 | eBay: specific listings only, or "new listing under $X" saved searches | **Both.** Added saved-search watches — paste an eBay search URL (or `search:<query>`) into `/add-item`. The Browse API is free (quota-limited). | Free |
 | 3 | Market-price granularity (sealed-only vs. singles via Scrydex) | **Sealed-first using the free eBay active-listing median** as the always-on source; PriceCharting is used automatically only if a key is present. Singles/Scrydex deferred. | Free (PriceCharting optional) |
 | 4 | Monetization timing (single-user vs. multi-tenant now) | **Single-tenant v1.** Schema is already multi-tenant-*ready*; add `owner_id` + RLS only when opening to others. No cost, no function lost now. | Free |
-| 5 | Hosting (Railway vs. Fly vs. VPS) | **Co-locate on the existing DNA Card Vault host** (marginal $0, shares `price_cache`). If none, **Fly.io** is cheapest persistent option. Dockerfile + `fly.toml` + Procfile included. | Free if you already host DNA Card Vault; otherwise small paid (see below) |
+| 5 | Hosting (Railway vs. Fly vs. VPS) | **Fly.io** (chosen). Worker config in `fly.toml`; full runbook in `DEPLOY.md`. Vercel can't host the poller (serverless: timeouts, no persistent state) — only the optional dashboard. | Cheapest persistent option; may be a couple $/mo (Fly's free allowance has thinned) |
 | 6 | Channel auto-creation on `/add-retailer` | **Auto-create by default** (creates the channel under the category + a webhook). Still bindable to an existing channel by passing `channel:`. | Free |
 
 ## How free-first shows up in the code

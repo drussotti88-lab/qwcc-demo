@@ -1,10 +1,18 @@
 # Fly.io deployment for the Sentinel worker (engine + bot).
-# Cheapest persistent option if you don't already run a VPS. Secrets are set
-# with `fly secrets set DISCORD_BOT_TOKEN=... SUPABASE_URL=...` (never in repo).
 #
-#   fly launch --no-deploy     # once, to create the app
-#   fly secrets set ...        # all vars from .env.example
+# This is a WORKER, not a web service: no [http_service], no public ports. With
+# no service defined, Fly keeps the single machine running 24/7 and restarts it
+# on crash — exactly what the persistent poller needs (PRD §21).
+#
+# Setup (once):
+#   fly launch --no-deploy --copy-config --name sentinel
+#   fly secrets set DISCORD_BOT_TOKEN=... DISCORD_CLIENT_ID=... \
+#       DISCORD_GUILD_ID=... DISCORD_CATEGORY_ID=... DISCORD_OPS_CHANNEL_ID=... \
+#       SUPABASE_URL=... SUPABASE_SERVICE_KEY=... \
+#       EBAY_CLIENT_ID=... EBAY_CLIENT_SECRET=...
 #   fly deploy
+#   fly scale count 1            # exactly one always-on machine
+#   fly logs                     # watch it boot + poll
 
 app = "sentinel"
 primary_region = "iad"
@@ -12,14 +20,18 @@ primary_region = "iad"
 [build]
   dockerfile = "Dockerfile"
 
-# Single always-on machine. This is a worker, not a web service — no HTTP ports.
-# Do NOT enable auto_stop: continuous sub-minute polling must not be suspended.
-[[vm]]
-  size = "shared-cpu-1x"
-  memory = "256mb"
+# Non-secret tuning. Secrets go through `fly secrets set`, never here (PRD §20).
+[env]
+  NODE_ENV = "production"
+  GLOBAL_POLL_INTERVAL_SEC = "45"
+  ALERT_COOLDOWN_SEC = "300"
+  LOG_LEVEL = "info"
 
 [processes]
   app = "node dist/index.js"
 
-[deploy]
-  strategy = "immediate"
+# Smallest preset to keep cost minimal. If discord.js + the engine ever OOM,
+# bump memory to 512mb (`fly scale memory 512`).
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

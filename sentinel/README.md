@@ -112,10 +112,12 @@ auto-restart. Continuous sub-minute polling does **not** fit serverless cron
 (timeouts, no persistent state, cold starts). Vercel is reserved for an optional
 read-only dashboard, not the poller.
 
-Included: `Dockerfile` (build + run), `fly.toml` (Fly.io), `Procfile`
-(Railway/Heroku-style). **Free-first**: co-locate on the host already running DNA
-Card Vault (shares the `price_cache` table) — see `DECISIONS.md` for the cost
-breakdown of every PRD §28 open question.
+**Target host: Fly.io** — see [`DEPLOY.md`](./DEPLOY.md) for the full runbook
+(`fly launch` → `fly secrets set` → `fly deploy` → `fly scale count 1`).
+`Dockerfile`, `fly.toml`, and a `Procfile` (Railway fallback) are included.
+Vercel **cannot** host the poller (serverless: timeouts, no persistent state) —
+it's only for the optional dashboard. See `DECISIONS.md` for the cost breakdown
+of every PRD §28 open question.
 
 ## Tests
 
